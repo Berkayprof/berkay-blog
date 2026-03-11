@@ -1,261 +1,433 @@
 <!DOCTYPE html>
-<html>
+<html lang="nl">
 <head>
-<title>Screensaver Herfst - Berkay Blog</title>
-<meta name="keywords" content="Berkay blog, blog, berkay, De berkay blog, berkay screensaver, screensaver, screensaver berkay blog">
-<meta name="author" content="Berkay">
-<meta name="description" content="Een leuke blog met tips en tricks, gemaakt door Berkay">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" type="image/x-icon" href="https://i.ibb.co/N6wZw4qN/favicon-32x32.png">
-</head>
+  <title>Screensaver Herfst - Berkay Blog</title>
+  <meta name="keywords" content="Berkay blog, blog, berkay, De berkay blog, berkay screensaver, screensaver, screensaver berkay blog">
+  <meta name="author" content="Berkay">
+  <meta name="description" content="Een leuke blog met tips en tricks, gemaakt door Berkay">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/x-icon" href="https://i.ibb.co/N6wZw4qN/favicon-32x32.png">
+  <!-- Google Fonts: mooie klok-stijl -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+
   <style>
-        body, html {
-            margin: 0;
-        }
-        div {
-            font-size: 4em;
-            height: 75px;
-            color: #ffffff;
-        }
-        .background {
-            width: 100%;
-            height: 100vh;
-            background-size: cover;
-            background-position: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: -10;
-            transition: opacity 1s ease-in-out;
-            opacity: 0;
-        }
-        .background.active {
-            opacity: 1;
-            z-index: -1;
-        }
-        #fullscreenModal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-        }
-        .modal-content {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 5px;
-            text-align: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            max-width: 300px;
-            margin: auto;
-        }
-        .modal-buttons {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        .modal-buttons button {
-            padding: 10px;
-            margin: 0 10px;
-        }
-        body {
-            margin: 0;
-            cursor: none;
-        }
-        #yesButton {
-            cursor: pointer;
-        }
-        #noButton {
-            cursor: pointer;
-        }
-        .show-cursor {
-            cursor: default;
-        }
-        #clock {
-            font-size: 4em;
-        }
-        #date {
-            font-size: 2em;
-        }
-        .exit {
-            display: none;
-            z-index: 100000000;
-            cursor: pointer;
-        }
-        .widget {
-          position: fixed; /* Stick it to the bottom */
-          bottom: 0;
-        }
+    /* =============================================
+       BASIS RESET & FULLSCREEN SETUP
+    ============================================= */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      /* Cursor standaard verborgen (screensaver-stijl) */
+      cursor: none;
+    }
+
+    /* Cursor zichtbaar maken als muis beweegt */
+    body.show-cursor {
+      cursor: default;
+    }
+
+    /* =============================================
+       ACHTERGROND SLIDESHOW
+       Twee lagen wisselen elkaar af via opacity-transitie
+    ============================================= */
+    .background {
+      width: 100%;
+      height: 100vh;
+      background-size: cover;
+      background-position: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -10;
+      /* Zachte overgang tussen afbeeldingen */
+      transition: opacity 1.5s ease-in-out;
+      opacity: 0;
+    }
+
+    /* Actieve achtergrond is zichtbaar */
+    .background.active {
+      opacity: 1;
+      z-index: -1;
+    }
+
+    /* =============================================
+       KLOK & DATUM
+    ============================================= */
+    #clock-container {
+      position: fixed;
+      top: 30px;
+      left: 40px;
+      z-index: 100;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.7), 0 0 40px rgba(0,0,0,0.4);
+      user-select: none;
+    }
+
+    #clock {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 4px;
+      line-height: 1;
+    }
+
+    #date {
+      font-family: 'Quicksand', sans-serif;
+      font-size: clamp(1rem, 2.5vw, 1.6rem);
+      font-weight: 600;
+      color: rgba(255,255,255,0.85);
+      letter-spacing: 2px;
+      margin-top: 6px;
+    }
+
+    /* =============================================
+       SLUIT-KNOP (verschijnt als muis beweegt)
+    ============================================= */
+    #exit {
+      display: none;
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 10000000;
+      cursor: pointer;
+      transition: transform 0.2s, opacity 0.2s;
+      opacity: 0.8;
+    }
+
+    #exit:hover {
+      transform: scale(1.15) rotate(5deg);
+      opacity: 1;
+    }
+
+    /* =============================================
+       FULLSCREEN MODAL
+    ============================================= */
+    #fullscreenModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(6px);
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+    }
+
+    .modal-content {
+      background: rgba(255,255,255,0.95);
+      padding: 32px 28px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+      max-width: 320px;
+      width: 90%;
+      font-family: 'Quicksand', sans-serif;
+    }
+
+    .modal-content p {
+      font-size: 1rem;
+      color: #222;
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .modal-buttons button {
+      padding: 10px 22px;
+      border: none;
+      border-radius: 8px;
+      font-family: 'Quicksand', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    #yesButton {
+      background: #c0622f;
+      color: white;
+    }
+
+    #yesButton:hover {
+      background: #a8541f;
+      transform: scale(1.04);
+    }
+
+    #noButton {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    #noButton:hover {
+      background: #bdbdbd;
+      transform: scale(1.04);
+    }
+
+    /* =============================================
+       FLASH EFFECT bij spatie-druk (kort wit flits)
+    ============================================= */
+    #flash {
+      position: fixed;
+      inset: 0;
+      background: white;
+      opacity: 0;
+      z-index: 5000;
+      pointer-events: none;
+      transition: opacity 0.08s ease-out;
+    }
+
+    #flash.active {
+      opacity: 0.18;
+    }
   </style>
+</head>
 <body>
-    <div id="exit" class="exit" style="float:right" onclick="closeFullscreen();">
-        <img src="https://i.ibb.co/PY4WLf7/kruis.png" width="50px" height="60px">
+
+  <!-- =============================================
+       SLUIT-KNOP (zichtbaar als muis beweegt)
+  ============================================= -->
+  <div id="exit" onclick="closeFullscreen();" title="Volledig scherm verlaten">
+    <img src="https://i.ibb.co/PY4WLf7/kruis.png" width="44px" height="44px" alt="Sluiten">
+  </div>
+
+  <!-- =============================================
+       ACHTERGRONDEN (twee lagen voor cross-fade)
+  ============================================= -->
+  <div id="background1" class="background active"></div>
+  <div id="background2" class="background"></div>
+
+  <!-- Flash-overlay voor spatie-effect -->
+  <div id="flash"></div>
+
+  <!-- =============================================
+       KLOK & DATUM
+  ============================================= -->
+  <div id="clock-container">
+    <div id="clock"></div>
+    <div id="date"></div>
+  </div>
+
+  <!-- =============================================
+       FULLSCREEN MODAL
+  ============================================= -->
+  <div id="fullscreenModal">
+    <div class="modal-content">
+      <p>🍂 Wil je de screensaver in <strong>fullscreen</strong> bekijken?<br><small>Dit is aanbevolen voor de beste ervaring.</small></p>
+      <div class="modal-buttons">
+        <button id="yesButton">⛶ Fullscreen</button>
+        <button id="noButton">Overslaan</button>
+      </div>
     </div>
-    <div id="background1" class="background active"></div>
-    <div id="background2" class="background"></div>
-    <div id="clock" style="font-family: verdana; color: white"></div>
-    <div id="date" style="font-family: verdana; color: white"></div>
-    <div id="fullscreenModal">
-        <div class="modal-content">
-            <div style="font-size: 20px; color: #000000">Wil je de website in fullscreen bekijken? Dit is wel aanbevolen.<br></div>
-            <div style="font-size: 13px; color: #000000"><a id="yesButton">Fullscreen</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a id="noButton">Geen Fullscreen</a></div>
-        </div>
-    </div>
-    <a class="weatherwidget-io widget" href="https://forecast7.com/nl/51d924d48/rotterdam/" data-label_1="ROTTERDAM" data-label_2="WEER" data-icons="Climacons Animated" data-days="3" data-theme="dark" data-basecolor="rgba(0, 0, 0, 0.02)" data-mooncolor="rgba(238, 238, 238, 0)" >ROTTERDAM WEER</a>
-    <script>
-      !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
-    </script>
-</body>
-<script>
-//klok
-function updateClock() {
-    const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const year = now.getFullYear();
-    document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
-    document.getElementById('date').textContent = `${day}-${month}-${year}`;
-}
+  </div>
 
-setInterval(updateClock, 1000);
-updateClock();
+  <!-- =============================================
+       HOOFD JAVASCRIPT
+  ============================================= -->
+  <script>
+    // ─────────────────────────────────────────────
+    // 1. KLOK & DATUM — elke seconde bijwerken
+    // ─────────────────────────────────────────────
+    function updateClock() {
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
 
-//slideshow
-let currentIndex = 0;
-const images = [
-    'url("https://i.ibb.co/7yCKxbh/1289a23e-6273-4ac7-9d44-425ba6d7060f.jpg")',
-    'url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSOukpltbTce_MJDTxN41IyiXmd2c6E-wOePA&s")',
-    'url("https://www.natuurfotografie.nl/wp-content/uploads/2015/03/gewone-pad-portret-1024.jpg")',
-    'url("https://img.freepik.com/premium-photo/bergtop-rustige-scene-herfst-schoonheid-natuur-kunst-gegenereerd-door-ai_24911-74285.jpg")',
-    'url("https://images.pexels.com/photos/803226/pexels-photo-803226.jpeg")',
-    'url("https://images.pexels.com/photos/247408/pexels-photo-247408.jpeg")',
-    'url("https://img.freepik.com/vrije-photo/herfstlandschap-van-de-bosbouwweg_23-2151843623.jpg")',
-    'url("https://tse2.mm.bing.net/th/id/OIP.esK8jBUgM74vGD2_aaSTuwHaEK?cb=ucfimg2&pid=Api&ucfimg=1")',
-    'url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRc1mXlnDQkG_I8NEKlUTYg9qYU2zq1RZt5QA&s")',
-    'url("https://tse4.mm.bing.net/th?id=OIP.19k-fnCWgQRnvByDKjK11gHaEo&pid=Api")',
-    'url("https://tse2.mm.bing.net/th?id=OIP.Fo57RXAJhYP57mknj83WDgHaEK&pid=Api")',
-    'url("https://tse1.mm.bing.net/th?id=OIP.U60t8ABWzM4SDVmDfqSVngHaEK&pid=Api")',
-    'url("https://tse3.mm.bing.net/th?id=OIP.jaSgYRdTkn9t-RPjh3CEegHaEx&pid=Api")',
-    'url("https://img.freepik.com/premium-photo/rustige-herfstavond-met-een-zachte-windvlaag-die-de-kleurrijke-bladeren-ritselt_971975-2518.jpg")',
-    'url("https://img.freepik.com/premium-photo/herfst-herfst-huisje-rustig-huis-hut-illustratie-digitale-kunst-concept-art_725906-2.jpg")',
-    'url("https://tse2.mm.bing.net/th?id=OIP.XCM2PMQ0G7Ai7lzm_pEsxgHaEo&pid=Api")',
-    'url("https://img.freepik.com/premium-photo/rustige-scene-van-de-herfst-bos-generatieve-ai_549702-6559.jpg")',
-    'url("https://img.freepik.com/premium-photo/een-rustige-herfstlandschap-op-een-landelijke-weg-met-levendige-bomen_762139-12248.jpg")'
-];
+      // Tijdformaat: UU:MM:SS
+      document.getElementById('clock').textContent =
+        `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 
-// Helper function to shuffle the array
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
+      // Datumformaat: Dag DD-MM-JJJJ
+      const dagen = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
+      document.getElementById('date').textContent =
+        `${dagen[now.getDay()]} ${pad(now.getDate())}-${pad(now.getMonth() + 1)}-${now.getFullYear()}`;
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock(); // Direct uitvoeren zodat er geen 1-seconde vertraging is
+
+
+    // ─────────────────────────────────────────────
+    // 2. AFBEELDINGEN LIJST (herfst-thema)
+    // ─────────────────────────────────────────────
+    const images = [
+      'url("https://i.ibb.co/7yCKxbh/1289a23e-6273-4ac7-9d44-425ba6d7060f.jpg")',
+      'url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSOukpltbTce_MJDTxN41IyiXmd2c6E-wOePA&s")',
+      'url("https://www.natuurfotografie.nl/wp-content/uploads/2015/03/gewone-pad-portret-1024.jpg")',
+      'url("https://img.freepik.com/premium-photo/bergtop-rustige-scene-herfst-schoonheid-natuur-kunst-gegenereerd-door-ai_24911-74285.jpg")',
+      'url("https://images.pexels.com/photos/803226/pexels-photo-803226.jpeg")',
+      'url("https://images.pexels.com/photos/247408/pexels-photo-247408.jpeg")',
+      'url("https://img.freepik.com/vrije-photo/herfstlandschap-van-de-bosbouwweg_23-2151843623.jpg")',
+      'url("https://tse2.mm.bing.net/th/id/OIP.esK8jBUgM74vGD2_aaSTuwHaEK?cb=ucfimg2&pid=Api&ucfimg=1")',
+      'url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRc1mXlnDQkG_I8NEKlUTYg9qYU2zq1RZt5QA&s")',
+      'url("https://tse4.mm.bing.net/th?id=OIP.19k-fnCWgQRnvByDKjK11gHaEo&pid=Api")',
+      'url("https://tse2.mm.bing.net/th?id=OIP.Fo57RXAJhYP57mknj83WDgHaEK&pid=Api")',
+      'url("https://tse1.mm.bing.net/th?id=OIP.U60t8ABWzM4SDVmDfqSVngHaEK&pid=Api")',
+      'url("https://tse3.mm.bing.net/th?id=OIP.jaSgYRdTkn9t-RPjh3CEegHaEx&pid=Api")',
+      'url("https://img.freepik.com/premium-photo/rustige-herfstavond-met-een-zachte-windvlaag-die-de-kleurrijke-bladeren-ritselt_971975-2518.jpg")',
+      'url("https://img.freepik.com/premium-photo/herfst-herfst-huisje-rustig-huis-hut-illustratie-digitale-kunst-concept-art_725906-2.jpg")',
+      'url("https://tse2.mm.bing.net/th?id=OIP.XCM2PMQ0G7Ai7lzm_pEsxgHaEo&pid=Api")',
+      'url("https://img.freepik.com/premium-photo/rustige-scene-van-de-herfst-bos-generatieve-ai_549702-6559.jpg")',
+      'url("https://img.freepik.com/premium-photo/een-rustige-herfstlandschap-op-een-landelijke-weg-met-levendige-bomen_762139-12248.jpg")'
+    ];
+
+    // ─────────────────────────────────────────────
+    // 3. ARRAY SCHUDDEN (Fisher-Yates algoritme)
+    //    Zodat de volgorde elke keer anders is
+    // ─────────────────────────────────────────────
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
     }
-}
+    shuffleArray(images);
 
-// Pre-load images
-images.forEach(src => {
-    const img = new Image();
-    img.src = src.slice(5, -2); // Remove 'url("' at the start and '")' at the end
-});
+    // ─────────────────────────────────────────────
+    // 4. AFBEELDINGEN PRELOADEN
+    //    Zodat er geen laadvertraging is bij het wisselen
+    // ─────────────────────────────────────────────
+    images.forEach(src => {
+      const img = new Image();
+      img.src = src.slice(5, -2); // Verwijder 'url("' en '")'
+    });
 
-// Shuffle the images array
-shuffleArray(images);
+    // ─────────────────────────────────────────────
+    // 5. ACHTERGROND WISSELEN
+    //    Richting: 1 = vooruit, -1 = achteruit
+    // ─────────────────────────────────────────────
+    let currentIndex = 0;
+    const bg1 = document.getElementById('background1');
+    const bg2 = document.getElementById('background2');
 
-function changeBackground() {
-    currentIndex = (currentIndex + 1) % images.length;
-    const background1 = document.getElementById('background1');
-    const background2 = document.getElementById('background2');
-    const nextImage = images[currentIndex];
-    if (background1.classList.contains('active')) {
-        background2.style.backgroundImage = nextImage;
-        background2.classList.add('active');
-        background1.classList.remove('active');
-    } else {
-        background1.style.backgroundImage = nextImage;
-        background1.classList.add('active');
-        background2.classList.remove('active');
+    function changeBackground(direction = 1) {
+      // Index berekenen met wrap-around
+      currentIndex = (currentIndex + direction + images.length) % images.length;
+      const nextImage = images[currentIndex];
+
+      // Wissel de actieve laag
+      if (bg1.classList.contains('active')) {
+        bg2.style.backgroundImage = nextImage;
+        bg2.classList.add('active');
+        bg1.classList.remove('active');
+      } else {
+        bg1.style.backgroundImage = nextImage;
+        bg1.classList.add('active');
+        bg2.classList.remove('active');
+      }
     }
-}
 
-setInterval(changeBackground, 90000); // Na 90 seconden wisselen
+    // Eerste afbeelding direct instellen
+    bg1.style.backgroundImage = images[0];
+    bg2.style.backgroundImage = images[1];
 
-// Lade de eerste afbeelding onmiddellijk
-document.getElementById('background1').style.backgroundImage = images[0];
-document.getElementById('background2').style.backgroundImage = images[1];
-document.getElementById('background2').classList.add('active');
+    // Auto-wisselen elke 90 seconden
+    let autoSlideTimer = setInterval(() => changeBackground(1), 90000);
 
-changeBackground(); // Initiële aanroep voor het instellen van de eerste afbeelding
+    // Auto-timer resetten na handmatige navigatie
+    function manualNavigate(direction) {
+      clearInterval(autoSlideTimer);
+      autoSlideTimer = setInterval(() => changeBackground(1), 90000);
+      changeBackground(direction);
 
-</script>
+      // Kort flash-effect
+      const flash = document.getElementById('flash');
+      flash.classList.add('active');
+      setTimeout(() => flash.classList.remove('active'), 150);
+    }
 
-<script>
-// Muis cursor verwijderen
-let cursorTimeout;
-var e = document.getElementById('exit');
-document.addEventListener('mousemove', showCursor);
+    // ─────────────────────────────────────────────
+    // 6. TOETSENBORD NAVIGATIE
+    //    Spatie / Pijl rechts → volgende afbeelding
+    //    Pijl links → vorige afbeelding
+    // ─────────────────────────────────────────────
+    document.addEventListener('keydown', function(e) {
+      if (e.code === 'Space') {
+        e.preventDefault(); // Voorkom scrollen
+        manualNavigate(1);
+      } else if (e.code === 'ArrowRight') {
+        e.preventDefault();
+        manualNavigate(1);
+      } else if (e.code === 'ArrowLeft') {
+        e.preventDefault();
+        manualNavigate(-1);
+      }
+    });
 
-function showCursor() {
-    document.body.classList.add('show-cursor');
-    clearTimeout(cursorTimeout);
-    cursorTimeout = setTimeout(hideCursor, 10000); // Tijd in milliseconden voordat de cursor verdwijnt
-    e.style.display = 'block'; // Show exit
-}
+    // ─────────────────────────────────────────────
+    // 7. CURSOR GEDRAG
+    //    Cursor verdwijnt na 10 seconden inactiviteit
+    // ─────────────────────────────────────────────
+    let cursorTimeout;
+    const exitBtn = document.getElementById('exit');
 
-function hideCursor() {
-    document.body.classList.remove('show-cursor');
-    e.style.display = 'none'; // Hide exit
-}
+    function showCursor() {
+      document.body.classList.add('show-cursor');
+      exitBtn.style.display = 'block';
+      clearTimeout(cursorTimeout);
+      cursorTimeout = setTimeout(hideCursor, 10000);
+    }
 
-// Initial call to hide the cursor after the page loads
-cursorTimeout = setTimeout(hideCursor, 10000); // Tijd in milliseconden voordat de cursor verdwijnt
+    function hideCursor() {
+      document.body.classList.remove('show-cursor');
+      exitBtn.style.display = 'none';
+    }
 
-</script>
-    <!--script voor fullscreen-->
-    <script>
-                //onClick exit
-        function closeFullscreen() {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) { /* Safari */
-                document.webkitExitFullscreen();
-            } else if (document.msExitFullscreen) { /* IE11 */
-                document.msExitFullscreen();
-            }
-        }
-        
-    //script voor fullscreen
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('fullscreenModal');
-            const yesButton = document.getElementById('yesButton');
-            const noButton = document.getElementById('noButton');
-            
-            modal.style.display = 'flex';
+    document.addEventListener('mousemove', showCursor);
+    cursorTimeout = setTimeout(hideCursor, 10000);
 
-            yesButton.addEventListener('click', function() {
-                if (document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen();
-                } else if (document.documentElement.mozRequestFullScreen) { // Firefox
-                    document.documentElement.mozRequestFullScreen();
-                } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari and Opera
-                    document.documentElement.webkitRequestFullscreen();
-                } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
-                    document.documentElement.msRequestFullscreen();
-                }
-                modal.style.display = 'none';
-            });
+    // ─────────────────────────────────────────────
+    // 8. FULLSCREEN FUNCTIONALITEIT
+    // ─────────────────────────────────────────────
+    function openFullscreen() {
+      const el = document.documentElement;
+      if (el.requestFullscreen)            el.requestFullscreen();
+      else if (el.mozRequestFullScreen)    el.mozRequestFullScreen();
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      else if (el.msRequestFullscreen)     el.msRequestFullscreen();
+    }
 
-            noButton.addEventListener('click', function() {
-                modal.style.display = 'none';
-            });
-        });
-    </script>
+    function closeFullscreen() {
+      if (document.exitFullscreen)            document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+      else if (document.msExitFullscreen)     document.msExitFullscreen();
+    }
+
+    // ─────────────────────────────────────────────
+    // 9. MODAL — tonen bij laden, verwerken knoppen
+    // ─────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', function() {
+      const modal = document.getElementById('fullscreenModal');
+      modal.style.display = 'flex';
+
+      document.getElementById('yesButton').addEventListener('click', function() {
+        openFullscreen();
+        modal.style.display = 'none';
+      });
+
+      document.getElementById('noButton').addEventListener('click', function() {
+        modal.style.display = 'none';
+      });
+    });
+
+    // ─────────────────────────────────────────────
+    // 10. MOBIEL DETECTIE → doorsturen naar mobiele versie
+    // ─────────────────────────────────────────────
+    window.addEventListener('load', function() {
+      if (/Mobi|Android/i.test(navigator.userAgent)) {
+        window.location.href = 'https://berkay-blog.glitch.me/mobile.html';
+      }
+    });
+  </script>
+</body>
 </html>
-<script> function detectMobile() { if (/Mobi|Android/i.test(navigator.userAgent)) { window.location.href = "https://berkay-blog.glitch.me/mobile.html"; } } window.onload = detectMobile; </script>
